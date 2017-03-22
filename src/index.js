@@ -42,8 +42,6 @@ class Plugin {
 
         let handlerFunction = templateFile.replace('%collectorUrl%', collectorUrl);
 
-        let customRole = this.serverless.service.custom.shipLogs.role;
-
         fs.writeFileSync(path.join(functionPath, 'handler.js'), handlerFunction);
 
         this.serverless.service.functions.sumologicShipping = {
@@ -51,9 +49,9 @@ class Plugin {
             events: []
         };
 
-        if (!!customRole) {
-            this.serverless.service.functions.sumologicShipping.role = customRole
-        }
+        let functionExtension = this.serverless.service.custom.shipLogs.function || {}
+        _.merge(this.serverless.service.functions.sumologicShipping, functionExtension)
+
     }
 
     deployCompileEvents() {
