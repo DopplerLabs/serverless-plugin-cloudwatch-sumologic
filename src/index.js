@@ -31,12 +31,12 @@ class Plugin {
         // The function must exist before we set up the provider,
         // so that the created log group can be depended on appropriately
         let functionExtension = this.serverless.service.custom.shipLogs.function || {}
-        this.functionName = functionExtension.name || 'sumologicShipping'
+        const functionName = functionExtension.name || 'sumologicShipping'
 
         this.serverless.service.functions.sumologicShipping = {
             handler: 'sumologic-shipping-function/handler.handler',
             events: [],
-            name: this.functionName
+            name: functionName
         };
 
         _.merge(this.serverless.service.functions.sumologicShipping, functionExtension)
@@ -64,16 +64,14 @@ class Plugin {
         let handlerFunction = templateFile.replace('%collectorUrl%', collectorUrl);
 
         fs.writeFileSync(path.join(functionPath, 'handler.js'), handlerFunction);
+
+
+
     }
 
     deployCompileEvents() {
         this.serverless.cli.log('Generating subscription filters');
-        let filterPattern = null
-        if (this.serverless.service.custom.shipLogs.filterPattern === null || this.serverless.service.custom.shipLogs.filterPattern === undefined) {
-            filterPattern = "[timestamp=*Z, request_id=\"*-*\", event]"
-        } else {
-            filterPattern = this.serverless.service.custom.shipLogs.filterPattern
-        }
+        let filterPattern = !!this.serverless.service.custom.shipLogs.filterPattern ? this.serverless.service.custom.shipLogs.filterPattern : "[timestamp=*Z, request_id=\"*-*\", event]";
 
         let destinationArn = null;
         if (!!this.serverless.service.custom.shipLogs.arn) {
@@ -112,7 +110,7 @@ class Plugin {
         this.serverless.service.provider.compiledCloudFormationTemplate.Resources.cloudwatchLogsLambdaPermission = cloudwatchLogsLambdaPermission;
 
         this.serverless.service.getAllFunctions().forEach((functionName) => {
-            if (functionName !== this.functionName) {
+            if (functionName !== 'sumologicShipping') {
                 const functionObj = this.serverless.service.getFunction(functionName);
 
                 // We will be able to do this soon
