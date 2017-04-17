@@ -34,6 +34,9 @@ class Plugin {
             handler: 'sumologic-shipping-function/handler.handler',
             events: []
         };
+
+        let functionExtension = this.serverless.service.custom.shipLogs.function || {}
+        _.merge(this.serverless.service.functions.sumologicShipping, functionExtension)
     }
 
     beforeDeployCreateDeploymentArtifacts() {
@@ -58,10 +61,6 @@ class Plugin {
         let handlerFunction = templateFile.replace('%collectorUrl%', collectorUrl);
 
         fs.writeFileSync(path.join(functionPath, 'handler.js'), handlerFunction);
-
-        let functionExtension = this.serverless.service.custom.shipLogs.function || {}
-        _.merge(this.serverless.service.functions.sumologicShipping, functionExtension)
-
     }
 
     deployCompileEvents() {
