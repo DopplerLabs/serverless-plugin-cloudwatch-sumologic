@@ -30,12 +30,15 @@ class Plugin {
 
         // The function must exist before we set up the provider,
         // so that the created log group can be depended on appropriately
+        let functionExtension = this.serverless.service.custom.shipLogs.function || {}
+        this.functionName = functionExtension.name || 'sumologicShipping'
+
         this.serverless.service.functions.sumologicShipping = {
             handler: 'sumologic-shipping-function/handler.handler',
-            events: []
+            events: [],
+            name: this.functionName
         };
 
-        let functionExtension = this.serverless.service.custom.shipLogs.function || {}
         _.merge(this.serverless.service.functions.sumologicShipping, functionExtension)
     }
 
@@ -109,7 +112,7 @@ class Plugin {
         this.serverless.service.provider.compiledCloudFormationTemplate.Resources.cloudwatchLogsLambdaPermission = cloudwatchLogsLambdaPermission;
 
         this.serverless.service.getAllFunctions().forEach((functionName) => {
-            if (functionName !== 'sumologicShipping') {
+            if (functionName !== this.functionName) {
                 const functionObj = this.serverless.service.getFunction(functionName);
 
                 // We will be able to do this soon
